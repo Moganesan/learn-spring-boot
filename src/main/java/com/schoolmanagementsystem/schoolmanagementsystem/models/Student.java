@@ -1,23 +1,27 @@
 package com.schoolmanagementsystem.schoolmanagementsystem.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "students")
 public class Student {
     @Id
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     private String name;
     private Integer age;
     private Integer rollNo;
 
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

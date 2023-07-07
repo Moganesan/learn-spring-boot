@@ -1,56 +1,52 @@
 package com.schoolmanagementsystem.schoolmanagementsystem.controllers;
 
-import com.schoolmanagementsystem.schoolmanagementsystem.exceptions.ResourceNotFoundException;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.Student;
-import com.schoolmanagementsystem.schoolmanagementsystem.repository.StudentRepository;
+import com.schoolmanagementsystem.schoolmanagementsystem.services.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.rmi.StubNotFoundException;
-import java.util.Optional;
+import java.util.List;
+import java.util.UUID;
 
 
 @RestController
 @RequestMapping(value = "/student")
 public class StudentController {
 
-    private final StudentRepository studentRepository;
-
     @Autowired
-    public StudentController(StudentRepository studentRepository){
-        this.studentRepository = studentRepository;
-    }
+    private StudentService studentService;
+
+
     @PostMapping(value = "/addNewStudent")
     public ResponseEntity<?> addNewUser(@RequestBody Student student){
-        Student savedStudent =  studentRepository.save(student);
+        Student savedStudent =  studentService.addNewStudent(student);
         return ResponseEntity.ok("New Student Added To DB.");
     }
 
+    @GetMapping
+    public ResponseEntity<?> getAllUser(){
+        List<Student> students = studentService.getAllStudents();
+        return new ResponseEntity<>(students,HttpStatus.OK);
+    }
+
     @GetMapping(value = "/{studentId}")
-    public ResponseEntity<?> getUser(@PathVariable Long studentId){
-        Optional<Student> student = studentRepository.findById(studentId);
+    public ResponseEntity<?> getUser(@PathVariable UUID studentId){
+        Student student = studentService.getStudentWithId(studentId);
         return ResponseEntity.ok(student);
     }
 
     @PatchMapping("/{studentId}")
-    public ResponseEntity<?> updateUser(@PathVariable Long studentId,@RequestBody Student updatedStudent){
-
-            Student student = studentRepository.findById(studentId).orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
-            student.setName(updatedStudent.getName());
-            student.setAge(updatedStudent.getAge());
-            student.setRollNo(updatedStudent.getRollNo());
-            Student savedStudent = studentRepository.save(student);
+    public ResponseEntity<?> updateUser(@PathVariable UUID studentId,@RequestBody Student updatedStudent){
+         studentService.updateStudentWithId(studentId,updatedStudent);
             return ResponseEntity.ok("Student Details Updated");
     }
 
 
     @DeleteMapping("/{studentId}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long studentId){
-
-    Student student =    studentRepository.findById(studentId).orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
-    studentRepository.deleteById(student.getId());
+    public ResponseEntity<?> deleteUser(@PathVariable UUID studentId){
+    studentService.deleteStudentWithId(studentId);
         return ResponseEntity.ok("Student Deleted Successfully.");
     }
 
