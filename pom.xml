@@ -14,7 +14,7 @@
 	<name>school-management-system</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>20</java.version>
+		<java.version>11</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -47,7 +47,17 @@
 			<version>RELEASE</version>
 			<scope>compile</scope>
 		</dependency>
-
+		<!-- Spring Security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<!-- JSON Web Token (JWT) -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.9.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
