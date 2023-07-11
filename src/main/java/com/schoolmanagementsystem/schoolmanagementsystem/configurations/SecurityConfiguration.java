@@ -17,22 +17,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.servlet.Filter;
 
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfiguration extends  WebSecurityConfigurerAdapter {
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Autowired
   private CustomUserDetailsService userDetailsService;
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
   @Autowired
   private JwtRequestFilter jwtRequestFilter;
 
-  @Bean
-  public PasswordEncoder passwordEncoder()
-  {
-    return new BCryptPasswordEncoder();
-  }
 
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
@@ -48,9 +47,8 @@ public class SecurityConfiguration extends  WebSecurityConfigurerAdapter {
     httpSecurity.addFilterAt(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
   }
 
-
   @Override
   public void configure(WebSecurity web) {
-    web.ignoring().antMatchers("/login","/register");
+    web.ignoring().antMatchers("/login", "/register");
   }
 }
