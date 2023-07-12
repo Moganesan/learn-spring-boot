@@ -22,7 +22,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtService jwtService;
     @Override
-    protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response, jakarta.servlet.FilterChain filterChain) throws jakarta.servlet.ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         if ("/protected" == uri) {
             String requestTokenHeader = request.getHeader("Authorization");
