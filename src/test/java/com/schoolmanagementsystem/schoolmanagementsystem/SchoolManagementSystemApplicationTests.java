@@ -19,6 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,48 +40,107 @@ class SchoolManagementSystemApplicationTests {
 	@Test
 	void contextLoads() {
 	}
+	RestTemplate restTemplate = new RestTemplate();
+
 
 	@Test
 	public void addNewStudentTest() {
 		Student student = new Student();
 		student.setName("Sample Student");
 		student.setAge(90);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNb2dhbmVzYW4iLCJpYXQiOjE2ODkxNDcyNzksImV4cCI6MTY4OTIzMzY3OX0.EMyXO_73Uhl6wd8z4GbbAzSsIMk6rHOTYePkMUY1rRZ27rryUVNOIR6wj3pFZC3HzqFLscVISygTkaxObnCvQg");
+		HttpEntity<Student> requestEntity = new HttpEntity<>(student, headers);
 
-		ResponseEntity<?> response = studentController.addNewUser(student);
+		ResponseEntity<String> responseEntity = restTemplate.exchange(
+				"http://localhost:4040/student/addNewStudent",
+				HttpMethod.POST,
+				requestEntity,
+				String.class
+		);
 
-		Assertions.assertEquals(response.getStatusCode(),HttpStatus.OK);
-		Assertions.assertEquals(response.getBody(),"New Student Added To DB.");
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals("New Student Added To DB.", responseEntity.getBody());
 	}
 
 	@Test
 	public void getAllStudentsTest(){
-		ResponseEntity<?> response = studentController.getAllUser();
-		Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNb2dhbmVzYW4iLCJpYXQiOjE2ODkxNDcyNzksImV4cCI6MTY4OTIzMzY3OX0.EMyXO_73Uhl6wd8z4GbbAzSsIMk6rHOTYePkMUY1rRZ27rryUVNOIR6wj3pFZC3HzqFLscVISygTkaxObnCvQg");
+		HttpEntity<Student> requestEntity = new HttpEntity<>(headers);
+
+		ResponseEntity<String> responseEntity = restTemplate.exchange(
+				"http://localhost:4040/student",
+				HttpMethod.GET,
+				requestEntity,
+				String.class
+		);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 	}
 
 	@Test
 	public void getStudentWithIdTest(){
-		UUID studentId = UUID.fromString("bc833158-dd61-4746-a772-90a2a2085ed9");
-		ResponseEntity<?> response = studentController.getUser(studentId);
-		Assertions.assertEquals(response.getStatusCode(),HttpStatus.OK);
+		UUID studentId = UUID.fromString("17f439d9-2f8a-400a-b8b2-2315087dcbca");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNb2dhbmVzYW4iLCJpYXQiOjE2ODkxNDcyNzksImV4cCI6MTY4OTIzMzY3OX0.EMyXO_73Uhl6wd8z4GbbAzSsIMk6rHOTYePkMUY1rRZ27rryUVNOIR6wj3pFZC3HzqFLscVISygTkaxObnCvQg");
+		HttpEntity<Student> requestEntity = new HttpEntity<>(headers);
+
+		ResponseEntity<String> responseEntity = restTemplate.exchange(
+				"http://localhost:4040/student/"+studentId,
+				HttpMethod.GET,
+				requestEntity,
+				String.class
+		);
+
+		Assertions.assertEquals(responseEntity.getStatusCode(),HttpStatus.OK);
 	}
 
 	@Test
-	public void updateStudentWithIdTest(){
-		UUID studentId = UUID.fromString("bc833158-dd61-4746-a772-90a2a2085ed9");
+	public void updateStudentWithIdTest() {
+		UUID studentId = UUID.fromString("17f439d9-2f8a-400a-b8b2-2315087dcbca");
 		Student targetStudent = studentRepository.findById(studentId).orElseThrow();
 		Integer updateAge = 90;
 		targetStudent.setAge(updateAge);
-		ResponseEntity<?> response = studentController.updateUser(studentId,targetStudent);
 
-		Assertions.assertEquals(response.getStatusCode(),HttpStatus.OK);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNb2dhbmVzYW4iLCJpYXQiOjE2ODkxNDcyNzksImV4cCI6MTY4OTIzMzY3OX0.EMyXO_73Uhl6wd8z4GbbAzSsIMk6rHOTYePkMUY1rRZ27rryUVNOIR6wj3pFZC3HzqFLscVISygTkaxObnCvQg");
+
+		RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
+		HttpEntity<Student> requestEntity = new HttpEntity<>(targetStudent, headers);
+
+		ResponseEntity<String> responseEntity = restTemplate.exchange(
+				"http://localhost:4040/student/" + studentId,
+				HttpMethod.PATCH,
+				requestEntity,
+				String.class
+		);
+		Student updatedStudent = studentRepository.findById(studentId).orElseThrow();
+
+		Assertions.assertEquals(updatedStudent.getAge(), updateAge);
+		Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
 	}
+
 
 	@Test
 	public void deleteStudentWithIdTest(){
-		UUID studentId = UUID.fromString("bc833158-dd61-4746-a772-90a2a2085ed9");
-		ResponseEntity<?> response = studentController.deleteUser(studentId);
+		UUID studentId = UUID.fromString("1e66edf8-851b-4af7-99b7-4834aec9929d");
 
-		Assertions.assertEquals(response.getStatusCode(),HttpStatus.OK);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNb2dhbmVzYW4iLCJpYXQiOjE2ODkxNDcyNzksImV4cCI6MTY4OTIzMzY3OX0.EMyXO_73Uhl6wd8z4GbbAzSsIMk6rHOTYePkMUY1rRZ27rryUVNOIR6wj3pFZC3HzqFLscVISygTkaxObnCvQg");
+
+		RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
+		HttpEntity<Student> requestEntity = new HttpEntity<>(headers);
+
+		ResponseEntity<String> responseEntity = restTemplate.exchange(
+				"http://localhost:4040/student/" + studentId,
+				HttpMethod.DELETE,
+				requestEntity,
+				String.class
+		);
+
+		Assertions.assertEquals(responseEntity.getStatusCode(),HttpStatus.OK);
 	}
 }

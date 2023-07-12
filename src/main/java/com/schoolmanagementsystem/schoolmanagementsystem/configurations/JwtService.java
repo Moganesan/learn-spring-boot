@@ -1,6 +1,7 @@
 package com.schoolmanagementsystem.schoolmanagementsystem.configurations;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,15 +49,16 @@ public class JwtService {
         }
     }
 
-    public AuthPrincipal getAllClaimsFromToken(String token) {
+    public AuthPrincipal getAllClaimsFromToken(String token) throws JwtException {
         try {
             var claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
             String userName = claims.get("userName", String.class);
             String role = claims.get("role", String.class);
             return new AuthPrincipal(userName, role);
-        } catch (Exception  e) {
+        } catch (JwtException  e) {
+            System.out.println("Getting Erorr"+e);
             e.printStackTrace();
+            throw  e;
         }
-        return null;
     }
 }
