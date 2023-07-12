@@ -24,7 +24,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
-        if ("/protected" == uri) {
+        if (!isOpenApi(uri)) {
             String requestTokenHeader = request.getHeader("Authorization");
             String jwtToken;
             AuthPrincipal authPrincipal;
@@ -88,5 +88,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(obj);
+    }
+
+    private boolean isOpenApi(String uri) {
+        return uri.contains("/login")
+                || uri.contains("/register")
+                ;
     }
 }
