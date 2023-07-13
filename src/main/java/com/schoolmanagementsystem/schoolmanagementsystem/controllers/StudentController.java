@@ -21,32 +21,37 @@ public class StudentController {
 
     @PostMapping(value = "/addNewStudent")
     public ResponseEntity<?> addNewUser(@RequestBody Student student){
+        System.out.println("Add New Student Route Triggered");
         Student savedStudent =  studentService.addNewStudent(student);
         return ResponseEntity.ok("New Student Added To DB.");
     }
 
     @GetMapping
     public ResponseEntity<?> getAllUser(){
+        System.out.println("Get All Student Route Triggered");
         List<Student> students = studentService.getAllStudents();
         return new ResponseEntity<>(students,HttpStatus.OK);
     }
 
     @GetMapping(value = "/{studentId}")
     public ResponseEntity<?> getUser(@PathVariable UUID studentId){
+        System.out.println("Get Student With Id Triggered");
         Student student = studentService.getStudentWithId(studentId);
         return ResponseEntity.ok(student);
     }
 
     @PatchMapping("/{studentId}")
     public ResponseEntity<?> updateUser(@PathVariable UUID studentId,@RequestBody Student updatedStudent){
-         studentService.updateStudentWithId(studentId,updatedStudent);
+        System.out.println("Update Student Route Triggered");
+        studentService.updateStudentWithId(studentId,updatedStudent);
             return ResponseEntity.ok("Student Details Updated");
     }
 
 
     @DeleteMapping("/{studentId}")
     public ResponseEntity<?> deleteUser(@PathVariable UUID studentId){
-    studentService.deleteStudentWithId(studentId);
+        System.out.println("Delete Student Route Triggered");
+        studentService.deleteStudentWithId(studentId);
         return ResponseEntity.ok("Student Deleted Successfully.");
     }
 
