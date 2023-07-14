@@ -1,52 +1,32 @@
 package com.schoolmanagementsystem.schoolmanagementsystem.services;
 
-import com.schoolmanagementsystem.schoolmanagementsystem.configurations.JwtService;
 import com.schoolmanagementsystem.schoolmanagementsystem.exceptions.ValidationException;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.db.User;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.request.user.CreateUser;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.request.user.UserLogin;
-import com.schoolmanagementsystem.schoolmanagementsystem.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-@Service
-public class UserService {
 
+public interface UserService {
+    /**
+     * Function to create new user in database
+     * @param traceId
+     * @param createUser
+     * @throws ValidationException
+     */
+    void signUpUser(String traceId, CreateUser createUser) throws ValidationException;
 
-    @Autowired
-    protected UserRepository userRepository;
+    /**
+     * Function to authenticate the user
+     * @param traceId
+     * @param userLogin
+     * @throws ValidationException
+     */
+    String login(String traceId, UserLogin userLogin) throws ValidationException;
 
-    @Autowired
-    protected PasswordEncoder passwordEncoder;
-
-    @Autowired
-    protected JwtService jwtService;
-
-
-    public void signupUser(String traceId, CreateUser createUser) throws ValidationException {
-        User userFromDb = fetchUserByUserName(createUser.getUserName());
-        if (userFromDb != null) throw new ValidationException("Username already exist");
-        User user = new User();
-        user.setUserName(createUser.getUserName());
-        user.setActive(true);
-        user.setPassword(passwordEncoder.encode(createUser.getPassword()));
-        user.setEmailId(createUser.getEmailId());
-        user.setPhoneNumber(createUser.getPhoneNumber());
-        userRepository.save(user);
-    }
-
-    public String login(String traceId, UserLogin userLogin) throws ValidationException {
-        User userFromDb = fetchUserByUserName(userLogin.getUserName());
-        if (userFromDb == null) throw new ValidationException("User does not exist");
-        if (!passwordEncoder.matches(userLogin.getPassword(),userFromDb.getPassword())) {
-            throw new ValidationException("Email Id or password is incorrect");
-        }
-        String token = jwtService.generateToken(userFromDb.getUserName());
-        return token;
-    }
-
-
-    public User fetchUserByUserName(String userName) {
-        return userRepository.findByUserName(userName);
-    }
+    /**
+     * Function to get user details with userName
+     * @param userName
+     * @return
+     * @throws ValidationException
+     */
+    User fetchUserByUserName(String userName) throws  ValidationException;
 }

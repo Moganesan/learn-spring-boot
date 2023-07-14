@@ -1,30 +1,18 @@
 package com.schoolmanagementsystem.schoolmanagementsystem;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.schoolmanagementsystem.schoolmanagementsystem.controllers.StudentController;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.Student;
 import com.schoolmanagementsystem.schoolmanagementsystem.repository.StudentRepository;
-import com.schoolmanagementsystem.schoolmanagementsystem.services.StudentService;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.HeaderTransformer;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest

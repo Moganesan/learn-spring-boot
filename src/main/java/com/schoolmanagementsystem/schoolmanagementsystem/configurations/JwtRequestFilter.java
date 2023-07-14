@@ -34,7 +34,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 jwtToken = requestTokenHeader.substring(7);
                 try {
                     authPrincipal = jwtService.getAllClaimsFromToken(jwtToken);
-
                 } catch (IllegalArgumentException e) {
                     System.out.println("IllegalArgumentException Request Failed");
                     logger.info("Unable to fetch JWT Token", e);
