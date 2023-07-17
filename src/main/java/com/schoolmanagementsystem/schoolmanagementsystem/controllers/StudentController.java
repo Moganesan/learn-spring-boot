@@ -2,6 +2,7 @@ package com.schoolmanagementsystem.schoolmanagementsystem.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.schoolmanagementsystem.schoolmanagementsystem.exceptions.ResourceNotFoundException;
 import com.schoolmanagementsystem.schoolmanagementsystem.exceptions.ValidationException;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.Student;
 import com.schoolmanagementsystem.schoolmanagementsystem.models.response.ResponseMessage;
@@ -9,15 +10,19 @@ import com.schoolmanagementsystem.schoolmanagementsystem.models.response.Respons
 import com.schoolmanagementsystem.schoolmanagementsystem.services.StudentService;
 import com.schoolmanagementsystem.schoolmanagementsystem.services.impl.StudentServiceImpl;
 import com.schoolmanagementsystem.schoolmanagementsystem.utils.Utils;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -40,8 +45,15 @@ public class StudentController {
      * @throws JsonProcessingException
      * @return 201 created success messages
      */
-    @PostMapping(value = "/")
-    public ResponseEntity<?> addNewUser(@RequestBody Student student) throws ValidationException, JsonProcessingException {
+    @PostMapping
+    public ResponseEntity<?> addNewUser(@Valid @RequestBody Student student, BindingResult bindingResult) throws ValidationException, JsonProcessingException {
+        if(bindingResult.hasErrors()){
+            List<String> errors = bindingResult.getFieldErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(new ResponseMessage(400,ResponseStatus.Failure, errors.toString()),HttpStatus.BAD_REQUEST);
+
+        }
         String traceId = Utils.getTrackingId();
         String studentJSON =  objectMapper.writeValueAsString(student);
         logger.info("{}: Post Request to create student, Student: {}",traceId,student.getName());
@@ -70,10 +82,21 @@ public class StudentController {
      */
     @GetMapping(value = "/{studentId}")
     public ResponseEntity<?> getUser(@PathVariable UUID studentId) throws ValidationException {
-        String traceId = Utils.getTrackingId();
-        logger.info("{}: Get Request to get student with id.",traceId);
-        Student student = studentService.getStudentWithId(traceId,studentId);
-        return ResponseEntity.ok(student);
+        try{
+            String traceId = Utils.getTrackingId();
+            logger.info("{}: Get Request to get student with id.",traceId);
+            Student student = studentService.getStudentWithId(traceId,studentId);
+            return ResponseEntity.ok(student);
+        } catch (ValidationException e) {
+            String errorMessage = e.getExceptionMessage();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        } catch (ResourceNotFoundException e) {
+            String errorMessage = "Student not found with id: " + studentId;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        } catch (Exception e) {
+            String errorMessage = "An error occurred: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
+        }
     }
 
     /**
@@ -86,11 +109,22 @@ public class StudentController {
      */
     @PatchMapping("/{studentId}")
     public ResponseEntity<?> updateUser(@PathVariable UUID studentId,@RequestBody Student updatedStudent) throws ValidationException, JsonProcessingException {
-        String traceId = Utils.getTrackingId();
-        String studentDetailsJSON = objectMapper.writeValueAsString(updatedStudent);
-        logger.info("{}: PATCH Request to update student details: {} with studentId: {} .",traceId,studentDetailsJSON,studentId);
-        studentService.updateStudentWithId(traceId,studentId,updatedStudent);
-        return new ResponseEntity<>(new ResponseMessage(201, ResponseStatus.Successful,"Student updated successfully"), HttpStatus.CREATED);
+        try{
+            String traceId = Utils.getTrackingId();
+            String studentDetailsJSON = objectMapper.writeValueAsString(updatedStudent);
+            logger.info("{}: PATCH Request to update student details: {} with studentId: {} .",traceId,studentDetailsJSON,studentId);
+            studentService.updateStudentWithId(traceId,studentId,updatedStudent);
+            return new ResponseEntity<>(new ResponseMessage(201, ResponseStatus.Successful,"Student updated successfully"), HttpStatus.CREATED);
+        } catch (ValidationException e) {
+            String errorMessage = e.getExceptionMessage();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        } catch (ResourceNotFoundException e) {
+            String errorMessage = "Student not found with id: " + studentId;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        } catch (Exception e) {
+            String errorMessage = "An error occurred: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
+        }
     }
 
 
@@ -102,10 +136,22 @@ public class StudentController {
      */
     @DeleteMapping("/{studentId}")
     public ResponseEntity<?> deleteUser(@PathVariable UUID studentId) throws ValidationException {
-        String traceId = Utils.getTrackingId();
-        logger.info("{}: DELETE Request to delete student details from DB.",traceId);
-        studentService.deleteStudentWithId(traceId,studentId);
-        return ResponseEntity.ok("Student Deleted Successfully.");
+        try{
+            String traceId = Utils.getTrackingId();
+            logger.info("{}: DELETE Request to delete student details from DB.",traceId);
+            studentService.deleteStudentWithId(traceId,studentId);
+            return ResponseEntity.ok("Student Deleted Successfully.");
+        } catch (ValidationException e) {
+        String errorMessage = e.getExceptionMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    } catch (ResourceNotFoundException e) {
+        String errorMessage = "Student not found with id: " + studentId;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+    } catch (Exception e) {
+        String errorMessage = "An error occurred: " + e.getMessage();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
+    }
+
     }
 
     @ExceptionHandler(Exception.class)

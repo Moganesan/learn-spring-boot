@@ -27,17 +27,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         if (!isOpenApi(uri)) {
             String requestTokenHeader = request.getHeader("Authorization");
-            System.out.println(requestTokenHeader);
             String jwtToken;
+            // Validate the JWT token
+            if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer ")) {
+                ResponseMessage responseMessage = new ResponseMessage(400, ResponseStatus.Failure,"Invalid JWT Token");
+                PrintWriter writer = response.getWriter();
+                response.setContentType("application/json");
+                response.setStatus(400);
+                writer.write(convertObjectToJson(responseMessage));
+                writer.flush();
+                return;
+            }
+
             AuthPrincipal authPrincipal = null;
             if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
                 jwtToken = requestTokenHeader.substring(7);
                 try {
                     authPrincipal = jwtService.getAllClaimsFromToken(jwtToken);
                 } catch (IllegalArgumentException e) {
-                    System.out.println("IllegalArgumentException Request Failed");
                     logger.info("Unable to fetch JWT Token", e);
-                    ResponseMessage responseMessage = new ResponseMessage(401, ResponseStatus.Failure,"Unable to validate signature from JWT Token, please check the format");
+                        ResponseMessage responseMessage = new ResponseMessage(401, ResponseStatus.Failure,"Unable to validate signature from JWT Token, please check the format");
                     PrintWriter writer = response.getWriter();
                     response.setContentType("application/json");
                     response.setStatus(401);
@@ -45,7 +54,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     writer.flush();
                     return;
                 } catch (ExpiredJwtException e) {
-                    System.out.println("ExpiredJwtException Request Failed");
                     logger.info("JWT Token has expired", e);
                     ResponseMessage responseMessage = new ResponseMessage(401,ResponseStatus.Failure,"JWT Token has expired");
                     PrintWriter writer = response.getWriter();
@@ -56,7 +64,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     return;
                 } catch (MalformedJwtException e) {
                     logger.info("Jwt validation failed", e);
-                    System.out.println("MalformedJwtException Request Failed");
                     ResponseMessage responseMessage = new ResponseMessage(401, ResponseStatus.Failure,"JWT validation failed");
                     PrintWriter writer = response.getWriter();
                     response.setStatus(401);
@@ -67,7 +74,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 } catch (Throwable e) {
                     // Handle any exception or error
                     logger.info("Jwt validation failed", e);
-                    System.out.println("Exception Request Failed");
                     e.printStackTrace(); // Print the exception stack trace for debugging
                     ResponseMessage responseMessage = new ResponseMessage(401, ResponseStatus.Failure,"JWT validation failed");
                     PrintWriter writer = response.getWriter();
@@ -77,8 +83,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     writer.flush();
                     return;
                 }
-
-                System.out.println("Running Without Error");
             } else {
                 logger.error("Token passed is null/JWT Token does not begin with Bearer String");
                 logger.info("Incorrect Jwt Token format");

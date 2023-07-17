@@ -1,9 +1,11 @@
 package com.schoolmanagementsystem.schoolmanagementsystem.models;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
@@ -13,8 +15,13 @@ public class Student {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @Positive(message = "Age must be a positive number")
+    @Max(value = 100, message = "Age cannot exceed 100")
     private Integer age;
+
     private Integer rollNo;
 
 
